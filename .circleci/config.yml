@@ -1,0 +1,44 @@
+version: 2.1
+
+parameters:
+  run_release_build:
+    type: boolean
+    default: false
+
+executors:
+  default:
+    working_directory: /tmp/workspace
+    docker:
+      - image: circleci/android:api-28
+
+jobs:
+  assemble_debug:
+    executor:
+      name: default
+    steps:
+      - checkout
+      - run:
+          name: Build debug APK
+          command: ./gradlew assembleDebug
+
+  assemble_release:
+    executor:
+      name: default
+    steps:
+      - checkout
+      - run:
+          name: Build Rlease APK
+          command: ./gradlew assembleRelease
+
+workflows:
+  version: 2
+
+  debug:
+    unless: << pipeline.parameters.run_release_build >>
+    jobs:
+      - assemble_debug
+
+  release:
+    when: << pipeline.parameters.run_release_build >>
+    jobs:
+      - assemble_release
